@@ -1,0 +1,13 @@
+insert into book_two_user (user_id, type_id, book_id, time) values (1,1,1,'2021.03.08 10:15:01');
+insert into book_two_user (user_id, type_id, book_id, time) values (1,2,2,'2021.03.08 10:15:01');
+insert into book_two_user (user_id, type_id, book_id, time) values (1,3,3,'2021.03.08 10:15:01');
+insert into book_two_user (user_id, type_id, book_id, time) values (1,2,4,'2021.03.08 10:15:01');
+insert into book_two_user (user_id, type_id, book_id, time) values (1,2,5,'2021.03.08 10:15:01');
+insert into book_two_user (user_id, type_id, book_id, time) values (1,2,6,'2021.03.08 10:15:01');
+insert into book_two_user (user_id, type_id, book_id, time) values (1,1,7,'2021.03.08 10:15:01');
+insert into book_two_user (user_id, type_id, book_id, time) values (2,1,8,'2021.03.08 10:15:01');
+insert into book_two_user (user_id, type_id, book_id, time) values (2,1,9,'2021.03.08 10:15:01');
+insert into book_two_user (user_id, type_id, book_id, time) values (2,1,10,'2021.03.08 10:15:01');
+insert into book_two_user (user_id, type_id, book_id, time) values (2,1,11,'2021.03.08 10:15:01');
+insert into book_two_user (user_id, type_id, book_id, time) values (2,1,12,'2021.03.08 10:15:01');
+insert into book_two_user (user_id, type_id, book_id, time) values (2,1,13,'2021.03.08 10:15:01');

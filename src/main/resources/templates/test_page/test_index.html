@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Стартовая тестовая страница</title>
+    <style>
+        .Centre_class{
+            margin: 50px;
+            margin-left: 70px;
+        }
+    </style>
+</head>
+<body>
+    <h1>На этой странице тестируются основные технологии проекта</h1>
+    <div class="Centre_class">
+        <div>
+            <h2>Тестирование пагинатора Page</h2>
+            <form method="get" th:action="@{/test/pagination}" >
+                <!--/*@thymesVar id="offset" type=""*/-->
+                <input type="text" placeholder="Page number type int" th:name="offset" th:value="${offset}">
+                <input type="submit" value="Отправить">
+            </form>
+        </div>
+        <div>
+            <form method="get" th:action="@{/test/books/by-author}">
+                <input type="text" placeholder="Enter the name of Author, type String" th:name="author" th:value="${author}">
+                <input type="submit" value="Отправить">
+            </form>
+        </div>
+    </div>
+</body>
+</html>

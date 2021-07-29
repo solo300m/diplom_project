@@ -1,0 +1,16 @@
+INSERT INTO book_two_author(sort_index, author_id, book_id) VALUES (1,26,1);
+INSERT INTO book_two_author(sort_index, author_id, book_id) VALUES (1,26,2);
+INSERT INTO book_two_author(sort_index, author_id, book_id) VALUES (1,26,3);
+INSERT INTO book_two_author(sort_index, author_id, book_id) VALUES (1,26,4);
+INSERT INTO book_two_author(sort_index, author_id, book_id) VALUES (1,26,5);
+INSERT INTO book_two_author(sort_index, author_id, book_id) VALUES (1,26,6);
+INSERT INTO book_two_author(sort_index, author_id, book_id) VALUES (1,26,7);
+INSERT INTO book_two_author(sort_index, author_id, book_id) VALUES (1,26,8);
+INSERT INTO book_two_author(sort_index, author_id, book_id) VALUES (1,26,9);
+INSERT INTO book_two_author(sort_index, author_id, book_id) VALUES (1,26,10);
+INSERT INTO book_two_author(sort_index, author_id, book_id) VALUES (1,26,11);
+INSERT INTO book_two_author(sort_index, author_id, book_id) VALUES (1,26,12);
+INSERT INTO book_two_author(sort_index, author_id, book_id) VALUES (1,26,13);
+INSERT INTO book_two_author(sort_index, author_id, book_id) VALUES (1,26,14);
+INSERT INTO book_two_author(sort_index, author_id, book_id) VALUES (1,26,15);
+INSERT INTO book_two_author(sort_index, author_id, book_id) VALUES (1,26,16);

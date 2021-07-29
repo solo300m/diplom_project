@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta name="description" content="Описание страницы">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+  <!--meta( http-equiv="cache-control" content="no-cache")-->
+  <!--meta( http-equiv="expires" content="0")-->
+  <!--link(rel="preload" href="assets/css/extra.min.css?v=" + version as="style" crossorigin="anonymous")-->
+  <link href="favicon.ico" rel="shortcut icon">
+  <link rel="preload" href="/assets/fonts/Montserrat/Montserrat-SemiBold.woff2" as="font" crossorigin="anonymous">
+  <link rel="preload" href="/assets/fonts/Montserrat/Montserrat-Light.woff2" as="font" crossorigin="anonymous">
+  <link rel="preload" href="/assets/fonts/Montserrat/Montserrat-Medium.woff2" as="font" crossorigin="anonymous">
+  <link rel="preload" href="/assets/fonts/Montserrat/Montserrat-ExtraBold.woff2" as="font" crossorigin="anonymous">
+  <link rel="stylesheet" href="/assets/css/MyClasses.css">
+
+  <link rel="stylesheet" href="/assets/css/fonts.min.css?v=87821122">
+  <link rel="stylesheet" href="/assets/css/basic.min.css?v=87821122">
+
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+  <link rel="stylesheet" href="/assets/css/extra.min.css?v=87821122"><!--[if lt IE 9]>
+
+
+  <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  <script defer src="/assets/js/scripts.min.js?v=87821122"></script>
+  <title>Title</title>
+</head>
+<body>
+<header th:replace="~{fragments/header_fragment :: headFragment(${postponedCount}, ${catCount}, ${userCustom})}"></header>
+<h1 class="comment-header">Новый отзыв</h1>
+<div class="Comment-my">
+  <h2 th:text="${bookComment.getTitle()}">Новый отзыв о книге</h2>
+  <div class="box-book">
+    <p ><img th:src="${bookComment.getImage()}"/></p>
+    <p th:text="${bookComment.getAuthor().getAuthor()}" style="margin-left: 18px">Автор</p>
+  </div>
+
+  <form th:action="@{/books/comment/{sl}(sl = ${bookComment.slug})}" method="post">
+    <div class="box-comment">
+      <p>Введите текст отзыва<Br>
+        <textarea class="textarea-my" name="comment" th:value="${comment}" rows="10"></textarea>
+      </p>
+      <p class="block-buttons"><input class="input-button"  type="submit" value="Отправить">
+        <input class="input-button" type="reset" value="Очистить">
+      </p>
+    </div>
+  </form>
+</div>
+<footer th:replace="~{fragments/footer_fragment :: footFragment}"></footer>
+<script src="/assets/plg/jQuery/jquery-3.5.1.min.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+</body>
+</html>

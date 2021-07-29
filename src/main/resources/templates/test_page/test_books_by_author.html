@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Тест REST-метода getBooksByAuthor(String AuthorName){}</title>
+    <style>
+        td{
+            padding: 5px;
+            padding-left: 25px ;
+            padding-right: 25px;
+        }
+        .cancel{
+            margin-left: 345px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Тест REST-метода getBooksByAuthor(String AuthorName){}</h1>
+    <div >
+        <table>
+            <thead>
+            <tr>
+                <th>Автор книги</th>
+                <th>Название книги</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="Page:${books_author}">
+                <td th:text="${Page.getAuthor().getAuthor()}"></td>
+                <td th:text="${Page.getTitle()}"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="cancel">
+        <form method="get" th:action="@{/test}">
+            <input type="submit" value="Cancel">
+        </form>
+    </div>
+</body>
+</html>

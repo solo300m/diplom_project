@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Test of a Pagination</title>
+    <style>
+        td{
+            padding: 5px;
+            padding-left: 25px ;
+            padding-right: 25px;
+        }
+        .control-pagination{
+            margin: 30px;
+            margin-left: 30px;
+            margin-bottom: 5px;
+        }
+        .left-block{
+            display: inline-block;
+        }
+        .right-block{
+            display: inline-block;
+        }
+        .page-number{
+            display: inline-block;
+        }
+        .page-name-block{
+            display: inline-block;
+            margin-right: 20px;
+        }
+        .cancel{
+            margin-left: 345px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Страница тестирования пагинации</h1>
+    <!--/*@thymesVar id="books" type=""*/-->
+    <div >
+        <table>
+           <thead>
+                <tr>
+                    <th>Автор книги</th>
+                    <th>Название книги</th>
+                </tr>
+           </thead>
+            <tbody>
+            <tr th:each="Page:${books}">
+                <td th:text="${Page.getAuthor().getAuthor()}"></td>
+                <td th:text="${Page.getTitle()}"></td>
+            </tr>
+            </tbody>
+        </table>
+
+    </div>
+    <div class="control-pagination">
+        <div class="page-name-block">
+            <p>Переключение страниц  </p>
+        </div>
+        <div class="left-block">
+            <form method="get" th:action="@{/test/pagination/left}">
+                <input type="submit" value="Previos Page">
+            </form>
+        </div>
+        <div class="page-number">
+            <p th:text="${offset}"></p>
+        </div>
+        <div class="right-block">
+            <form method="get" th:action="@{/test/pagination/right}">
+                <input type="submit" value="Next Page">
+            </form>
+        </div>
+    </div>
+    <div class="cancel">
+        <form method="get" th:action="@{/test}">
+            <input type="submit" value="Cancel">
+        </form>
+    </div>
+
+</body>
+</html>
