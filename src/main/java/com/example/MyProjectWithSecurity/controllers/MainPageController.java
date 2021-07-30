@@ -30,6 +30,7 @@ public class MainPageController {
     private UserRepository userRepository;
     private Book2UserRepository book2UserRepository;
 
+
     @Autowired
     public MainPageController(BookService bookService, AuthorService authorService, HibernateService hibernateService, UserRepository userRepository, Book2UserRepository book2UserRepository) {
         this.bookService = bookService;
