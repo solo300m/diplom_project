@@ -1,7 +1,7 @@
 package com.example.MyProjectWithSecurity.controllers;
 
-import com.example.MyProjectWithSecurity.Repositories.Book2UserRepository;
-import com.example.MyProjectWithSecurity.Repositories.UserRepository;
+import com.example.MyProjectWithSecurity.Repositories.*;
+
 import com.example.MyProjectWithSecurity.Service.AuthorService;
 import com.example.MyProjectWithSecurity.Service.BookService;
 import com.example.MyProjectWithSecurity.Service.GenreService;
@@ -30,8 +30,8 @@ public class GenresPageController {
     private Integer offset = 0;
     private Integer limit = 5;
     private boolean flag = true;
-    SearchIdDto searchIdDto = new SearchIdDto();
-    List<Book2Genre>listBook = new ArrayList<>();
+    private SearchIdDto searchIdDto = new SearchIdDto();
+    private List<Book2Genre>listBook = new ArrayList<>();
     private UserRepository userRepository;
     private Book2UserRepository book2UserRepository;
 
@@ -137,6 +137,7 @@ public class GenresPageController {
         genre_old = genre;
         listBook.clear();
         offset = 0;
+        Logger.getLogger(GenresPageController.class.getSimpleName()).info("This is genre controller");
         model.addAttribute("gen",genreService.getGenreOfId(genre));
         //model.addAttribute("listBook",genreService.getListBookOfGenre(genreService.getMapBook2Genre(), genre));
         //model.addAttribute("listBook",genreService.getPageBookOfGenre(genre_old,0,5));
@@ -159,6 +160,7 @@ public class GenresPageController {
     }
     @GetMapping("/next/page/")
     public String getNextPageIdGenre(Model model){
+        Logger.getLogger(GenresPageController.class.getSimpleName()).info("The Lost controller");
         if(flag) {
             listBook.addAll(genreService.getPageBookOfGenre(genre_old, offset, limit).getContent());
             flag = false;
@@ -172,7 +174,7 @@ public class GenresPageController {
              ++offset;
             flag = true;
         }
-        return "/genres/slug.html";
+        return "/genres/slug";
     }
 
     /*@GetMapping("/books/gonre/{genre}")

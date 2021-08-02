@@ -1,7 +1,7 @@
 package com.example.MyProjectWithSecurity.controllers;
 
-import com.example.MyProjectWithSecurity.Repositories.Book2UserRepository;
-import com.example.MyProjectWithSecurity.Repositories.UserRepository;
+import com.example.MyProjectWithSecurity.Repositories.*;
+
 import com.example.MyProjectWithSecurity.Service.AuthorService;
 import com.example.MyProjectWithSecurity.data.*;
 import com.example.MyProjectWithSecurity.Service.BookService;
@@ -27,8 +27,8 @@ public class MainPageController {
     private AuthorService authorService;
     private HibernateService hibernateService;
     private Integer teg_old = 0;
-    private UserRepository userRepository;
-    private Book2UserRepository book2UserRepository;
+    private final UserRepository userRepository;
+    private final Book2UserRepository book2UserRepository;
 
 
     @Autowired

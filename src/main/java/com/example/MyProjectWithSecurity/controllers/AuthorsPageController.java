@@ -1,7 +1,7 @@
 package com.example.MyProjectWithSecurity.controllers;
 
-import com.example.MyProjectWithSecurity.Repositories.Book2UserRepository;
-import com.example.MyProjectWithSecurity.Repositories.UserRepository;
+import com.example.MyProjectWithSecurity.Repositories.*;
+
 import com.example.MyProjectWithSecurity.Service.AuthorService;
 import com.example.MyProjectWithSecurity.Service.BookService;
 import com.example.MyProjectWithSecurity.data.Authors;
