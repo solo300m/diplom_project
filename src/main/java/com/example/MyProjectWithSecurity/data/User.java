@@ -1,6 +1,6 @@
 package com.example.MyProjectWithSecurity.data;
 
-import com.example.MyProjectWithSecurity.security.BookstoreUser;
+import com.example.MyProjectWithSecurity.security.data.BookstoreUser;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.*;

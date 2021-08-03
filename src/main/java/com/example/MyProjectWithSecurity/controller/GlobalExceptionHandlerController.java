@@ -1,4 +1,4 @@
-package com.example.MyProjectWithSecurity.controllers;
+package com.example.MyProjectWithSecurity.controller;
 
 import com.example.MyProjectWithSecurity.errs.EmptySearchException;
 import org.springframework.web.bind.annotation.ControllerAdvice;

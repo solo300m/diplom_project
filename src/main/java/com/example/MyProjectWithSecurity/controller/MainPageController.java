@@ -1,7 +1,6 @@
-package com.example.MyProjectWithSecurity.controllers;
+package com.example.MyProjectWithSecurity.controller;
 
 import com.example.MyProjectWithSecurity.Repositories.*;
-
 import com.example.MyProjectWithSecurity.Service.AuthorService;
 import com.example.MyProjectWithSecurity.data.*;
 import com.example.MyProjectWithSecurity.Service.BookService;

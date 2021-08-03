@@ -1,5 +1,6 @@
-package com.example.MyProjectWithSecurity.security;
+package com.example.MyProjectWithSecurity.security.service;
 
+import com.example.MyProjectWithSecurity.security.data.BookstoreUser;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;

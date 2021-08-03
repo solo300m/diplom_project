@@ -1,4 +1,4 @@
-package com.example.MyProjectWithSecurity.controllers;
+package com.example.MyProjectWithSecurity.controller;
 
 import com.example.MyProjectWithSecurity.Service.BookService;
 import com.example.MyProjectWithSecurity.data.Book;

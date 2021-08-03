@@ -1,8 +1,11 @@
-package com.example.MyProjectWithSecurity.security;
+package com.example.MyProjectWithSecurity.security.data;
 
 import com.example.MyProjectWithSecurity.Repositories.UserRepository;
 import com.example.MyProjectWithSecurity.data.User;
+import com.example.MyProjectWithSecurity.security.repository.BookstoreUserRepository;
 import com.example.MyProjectWithSecurity.security.jwt.JWTUtil;
+import com.example.MyProjectWithSecurity.security.service.BookstoreUserDetailService;
+import com.example.MyProjectWithSecurity.security.service.BookstoreUserDetails;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;

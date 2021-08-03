@@ -1,4 +1,4 @@
-package com.example.MyProjectWithSecurity.security;
+package com.example.MyProjectWithSecurity.security.data;
 
 import com.example.MyProjectWithSecurity.data.*;
 

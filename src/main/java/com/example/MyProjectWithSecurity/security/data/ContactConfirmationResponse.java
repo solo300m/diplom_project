@@ -1,4 +1,4 @@
-package com.example.MyProjectWithSecurity.security;
+package com.example.MyProjectWithSecurity.security.data;
 
 public class ContactConfirmationResponse {
     private String result;

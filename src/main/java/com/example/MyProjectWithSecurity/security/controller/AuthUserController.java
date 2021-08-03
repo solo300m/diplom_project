@@ -1,23 +1,18 @@
-package com.example.MyProjectWithSecurity.security;
+package com.example.MyProjectWithSecurity.security.controller;
 
-import com.example.MyProjectWithSecurity.Repositories.Book2UserRepository;
-import com.example.MyProjectWithSecurity.Repositories.UserRepository;
-import com.example.MyProjectWithSecurity.data.Book;
-import com.example.MyProjectWithSecurity.data.Book2User;
-import com.example.MyProjectWithSecurity.data.User;
+import com.example.MyProjectWithSecurity.Repositories.*;
+import com.example.MyProjectWithSecurity.security.data.BookstoreUserRegister;
+import com.example.MyProjectWithSecurity.security.data.ContactConfirmationPayload;
+import com.example.MyProjectWithSecurity.security.data.ContactConfirmationResponse;
+import com.example.MyProjectWithSecurity.security.data.RegistrationForm;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 @Controller
 public class AuthUserController {

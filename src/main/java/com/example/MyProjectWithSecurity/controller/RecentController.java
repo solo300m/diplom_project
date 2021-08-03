@@ -1,10 +1,10 @@
-package com.example.MyProjectWithSecurity.controllers;
+package com.example.MyProjectWithSecurity.controller;
 
 import com.example.MyProjectWithSecurity.Repositories.Book2UserRepository;
 import com.example.MyProjectWithSecurity.Repositories.UserRepository;
-import com.example.MyProjectWithSecurity.Service.AuthorService;
-import com.example.MyProjectWithSecurity.Service.BookService;
 import com.example.MyProjectWithSecurity.data.Book;
+import com.example.MyProjectWithSecurity.Service.BookService;
+
 import com.example.MyProjectWithSecurity.data.Book2User;
 import com.example.MyProjectWithSecurity.data.User;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,17 +21,16 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 @Controller
+//@RequestMapping("/recent")
+public class RecentController {
 
-public class SlugController {
-    private BookService bookService;
-    private AuthorService authorService;
+    private final BookService bookService;
     private final UserRepository userRepository;
     private final Book2UserRepository book2UserRepository;
 
     @Autowired
-    public SlugController(BookService bookService, AuthorService authorService, UserRepository userRepository, Book2UserRepository book2UserRepository) {
+    public RecentController(BookService bookService, UserRepository userRepository, Book2UserRepository book2UserRepository) {
         this.bookService = bookService;
-        this.authorService = authorService;
         this.userRepository = userRepository;
         this.book2UserRepository = book2UserRepository;
     }
@@ -95,27 +94,26 @@ public class SlugController {
         }
     }
 
+    @ModelAttribute("recentBooks")
+    public List<Book> recentBooks(){
+        //bookService.setAuthorsData(bookService.getBookData());
+        //bookService.updateBookIdAuthors();
+        return bookService.getListOfNewBooks();
+    }
+    @ModelAttribute("searchResults")
+    public List<Book> searchResults(){
+        return new ArrayList<>();
+    }
 
-    //    @GetMapping
-//    public String getSlugPage(Model model){
-//        model.addAttribute("authors",bookService.getMapId(bookService.getAuthorsList()));
-//        return "authors/slug.html";
-//    }
-    @GetMapping("/slug/authors")
-    public String getAuthorsSlug(Model model){
-        Logger.getLogger(MainPageController.class.getName()).info("Opened page authors from slug");
-        model.addAttribute("authors",authorService.getMapAuthors(authorService.getAuthorsList()));
-        return "/authors/index.html";
+    @GetMapping("/recent")
+    public String recentPage(Model model){
+        model.addAttribute("searchResults",bookService.getPageOfNewBooks(0,5).getContent());
+        Logger.getLogger(RecentController.class.getName()).info("Opened page recent");
+        return "/recent.html";
     }
-    @GetMapping("/slug/bookshop")
-    public String getSlugMain(Model model){
-        Logger.getLogger(MainPageController.class.getName()).info("Opened page main from slug");
-        model.addAttribute("bookData",bookService.getBookData());
-        return "index.html";
-    }
-    @GetMapping("/slug/genres")
-    public String genresPage(){
-        Logger.getLogger(MainPageController.class.getName()).info("Opened page genres from slug");
-        return "/genres/index.html";
+    @GetMapping("/recent/bookshop")
+    public String mainPageReturn(){
+        Logger.getLogger(RecentController.class.getName()).info("Reload great page!");
+        return "index";
     }
 }

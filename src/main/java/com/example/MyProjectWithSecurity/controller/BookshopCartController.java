@@ -1,10 +1,10 @@
-package com.example.MyProjectWithSecurity.controllers;
+package com.example.MyProjectWithSecurity.controller;
 
 
-import com.example.MyProjectWithSecurity.Repositories.Book2UserRepository;
-import com.example.MyProjectWithSecurity.Repositories.Book2UserTypeRepository;
-import com.example.MyProjectWithSecurity.Repositories.BookRepository;
-import com.example.MyProjectWithSecurity.Repositories.UserRepository;
+import com.example.MyProjectWithSecurity.Repositories.*;
+//import com.example.MyProjectWithSecurity.Repositories.Book2UserTypeRepository;
+//import com.example.MyProjectWithSecurity.Repositories.BookRepository;
+//import com.example.MyProjectWithSecurity.Repositories.UserRepository;
 import com.example.MyProjectWithSecurity.data.Book;
 import com.example.MyProjectWithSecurity.data.Book2User;
 import com.example.MyProjectWithSecurity.data.Book2User_type;
@@ -21,7 +21,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.StringJoiner;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -260,9 +259,7 @@ public class BookshopCartController {
         if(filtListUser.size() >= 1){
             Book2User book2User = new Book2User();
             book2User = filtListUser.get(0);
-//            Book2User_type book2User_type = new Book2User_type();
-//            book2User_type.setId(1);
-//            book2User.setBook_file_type(book2User_type);
+
             book2UserRepository.delete(book2User);
         }
 

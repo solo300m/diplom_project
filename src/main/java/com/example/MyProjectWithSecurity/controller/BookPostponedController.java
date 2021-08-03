@@ -1,4 +1,4 @@
-package com.example.MyProjectWithSecurity.controllers;
+package com.example.MyProjectWithSecurity.controller;
 
 import com.example.MyProjectWithSecurity.Repositories.*;
 
@@ -8,8 +8,8 @@ import com.example.MyProjectWithSecurity.data.Book;
 import com.example.MyProjectWithSecurity.data.Book2User;
 import com.example.MyProjectWithSecurity.data.Book2User_type;
 import com.example.MyProjectWithSecurity.data.User;
-import com.example.MyProjectWithSecurity.security.BookstoreUser;
-import com.example.MyProjectWithSecurity.security.BookstoreUserRepository;
+import com.example.MyProjectWithSecurity.security.data.BookstoreUser;
+import com.example.MyProjectWithSecurity.security.repository.BookstoreUserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -116,7 +116,6 @@ public class BookPostponedController {
 
     @GetMapping("/postponed/{sl}")
     public String handlePostponed(@PathVariable("sl") String sl, Model model){
-//        oldSlug = sl;
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String username = auth.getName();
         if(!username.equals("anonymousUser")){

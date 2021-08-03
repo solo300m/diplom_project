@@ -1,14 +1,11 @@
-package com.example.MyProjectWithSecurity.controllers;
+package com.example.MyProjectWithSecurity.controller;
 
 import com.example.MyProjectWithSecurity.Repositories.*;
-
 import com.example.MyProjectWithSecurity.Service.AuthorService;
 import com.example.MyProjectWithSecurity.Service.BookService;
-import com.example.MyProjectWithSecurity.data.Authors;
 import com.example.MyProjectWithSecurity.data.Book;
 import com.example.MyProjectWithSecurity.data.Book2User;
 import com.example.MyProjectWithSecurity.data.User;
-import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -16,32 +13,25 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 @Controller
 
-//@RequestMapping("/authors")
-//@Api(description = "authors data")
-public class AuthorsPageController {
-
+public class SlugController {
     private BookService bookService;
     private AuthorService authorService;
-    private UserRepository userRepository;
-    private Book2UserRepository book2UserRepository;
+    private final UserRepository userRepository;
+    private final Book2UserRepository book2UserRepository;
 
     @Autowired
-    public AuthorsPageController(BookService bookService, AuthorService authorService, UserRepository userRepository, Book2UserRepository book2UserRepository) {
+    public SlugController(BookService bookService, AuthorService authorService, UserRepository userRepository, Book2UserRepository book2UserRepository) {
         this.bookService = bookService;
         this.authorService = authorService;
         this.userRepository = userRepository;
-
         this.book2UserRepository = book2UserRepository;
     }
 
@@ -105,45 +95,26 @@ public class AuthorsPageController {
     }
 
 
-    @GetMapping("/authors")
-    public String reloadAuthors(Model model){
-        model.addAttribute("bookList",bookService.getBookData());
+    //    @GetMapping
+//    public String getSlugPage(Model model){
+//        model.addAttribute("authors",bookService.getMapId(bookService.getAuthorsList()));
+//        return "authors/slug.html";
+//    }
+    @GetMapping("/slug/authors")
+    public String getAuthorsSlug(Model model){
+        Logger.getLogger(MainPageController.class.getName()).info("Opened page authors from slug");
         model.addAttribute("authors",authorService.getMapAuthors(authorService.getAuthorsList()));
-        return "/authors/index";
+        return "/authors/index.html";
     }
-
-    @GetMapping("/authors/genres")
-    public String genresPage(){
-        Logger.getLogger(MainPageController.class.getName()).info("Opened page genres");
-        return "/genres/index.html";
-    }
-
-    @GetMapping("/authors/bookshop")
-    public String mainOpen(Model model){
-        Logger.getLogger(GenresPageController.class.getName()).info("Back on the main-page");
-        model.addAttribute("bookData", bookService.getBookData());
+    @GetMapping("/slug/bookshop")
+    public String getSlugMain(Model model){
+        Logger.getLogger(MainPageController.class.getName()).info("Opened page main from slug");
+        model.addAttribute("bookData",bookService.getBookData());
         return "index.html";
     }
-    /*@GetMapping("/authors")
-    public String authorPage(){
-        Logger.getLogger(MainPageController.class.getName()).info("Opened page authors");
-        return "/authors/index.html";
-    }*/
-    @GetMapping("/authors/{id}")
-    public String slugPage(@PathVariable("id") int id, Model model){
-        //Logger.getLogger(MainPageController.class.getName()).info("Opened page slug");
-        model.addAttribute("authors",authorService.getAuthorId(id).getAuthor());
-        model.addAttribute("bio",authorService.getAuthorId(id).getBiography());
-        model.addAttribute("photo",authorService.getAuthorId(id).getPhoto());
-        model.addAttribute("books",authorService.getIdAuthorBook(id));
-        Logger.getLogger(MainPageController.class.getName()).info("Opened page slug"/*+model.getAttribute("bio")*/);
-        return "/authors/slugs/slug.html";
-    }
-
-    @ApiOperation("method to get map of authors")
-    @GetMapping("/api/authors")
-    @ResponseBody
-    public Map<String, List<Authors>> authors(){
-        return authorService.getMapAuthors(authorService.getAuthorsList());
+    @GetMapping("/slug/genres")
+    public String genresPage(){
+        Logger.getLogger(MainPageController.class.getName()).info("Opened page genres from slug");
+        return "/genres/index.html";
     }
 }

@@ -1,7 +1,5 @@
 package com.example.MyProjectWithSecurity.data;
 
-import com.example.MyProjectWithSecurity.security.BookstoreUser;
-
 import javax.persistence.*;
 
 @Entity

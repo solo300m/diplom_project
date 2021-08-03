@@ -1,5 +1,7 @@
-package com.example.MyProjectWithSecurity.security;
+package com.example.MyProjectWithSecurity.security.service;
 
+import com.example.MyProjectWithSecurity.security.repository.BookstoreUserRepository;
+import com.example.MyProjectWithSecurity.security.data.BookstoreUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

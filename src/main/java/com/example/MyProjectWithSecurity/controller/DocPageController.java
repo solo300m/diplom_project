@@ -1,36 +1,27 @@
-package com.example.MyProjectWithSecurity.controllers;
+package com.example.MyProjectWithSecurity.controller;
 
 import com.example.MyProjectWithSecurity.Repositories.Book2UserRepository;
 import com.example.MyProjectWithSecurity.Repositories.UserRepository;
 import com.example.MyProjectWithSecurity.data.Book;
-import com.example.MyProjectWithSecurity.Service.BookService;
-
 import com.example.MyProjectWithSecurity.data.Book2User;
 import com.example.MyProjectWithSecurity.data.User;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 @Controller
-//@RequestMapping("/recent")
-public class RecentController {
+public class DocPageController {
 
-    private final BookService bookService;
-    private final UserRepository userRepository;
-    private final Book2UserRepository book2UserRepository;
+    private UserRepository userRepository;
+    private Book2UserRepository book2UserRepository;
 
-    @Autowired
-    public RecentController(BookService bookService, UserRepository userRepository, Book2UserRepository book2UserRepository) {
-        this.bookService = bookService;
+    public DocPageController(UserRepository userRepository, Book2UserRepository book2UserRepository) {
         this.userRepository = userRepository;
         this.book2UserRepository = book2UserRepository;
     }
@@ -94,26 +85,24 @@ public class RecentController {
         }
     }
 
-    @ModelAttribute("recentBooks")
-    public List<Book> recentBooks(){
-        //bookService.setAuthorsData(bookService.getBookData());
-        //bookService.updateBookIdAuthors();
-        return bookService.getListOfNewBooks();
-    }
-    @ModelAttribute("searchResults")
-    public List<Book> searchResults(){
-        return new ArrayList<>();
+
+    @GetMapping("/docs")
+    public String docsPage(){
+        return "/Documents/Documents.html";
     }
 
-    @GetMapping("/recent")
-    public String recentPage(Model model){
-        model.addAttribute("searchResults",bookService.getPageOfNewBooks(0,5).getContent());
-        Logger.getLogger(RecentController.class.getName()).info("Opened page recent");
-        return "/recent.html";
+    @GetMapping("/company")
+    public String companyPage(){
+        return "/Documents/about_kompany.html";
     }
-    @GetMapping("/recent/bookshop")
-    public String mainPageReturn(){
-        Logger.getLogger(RecentController.class.getName()).info("Reload great page!");
-        return "index";
+
+    @GetMapping("/help")
+    public String helpPage(){
+        return "/Documents/help.html";
+    }
+
+    @GetMapping("/customers")
+    public String customersPage(){
+        return "/Documents/customer.html";
     }
 }

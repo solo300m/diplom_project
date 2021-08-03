@@ -2,6 +2,7 @@ package com.example.MyProjectWithSecurity.security;
 
 
 import com.example.MyProjectWithSecurity.security.jwt.JWTRequestFilter;
+import com.example.MyProjectWithSecurity.security.service.BookstoreUserDetailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,7 +20,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-    private  final  BookstoreUserDetailService bookstoreUserDetailService;
+    private  final BookstoreUserDetailService bookstoreUserDetailService;
     private final JWTRequestFilter filter;
 
     @Autowired

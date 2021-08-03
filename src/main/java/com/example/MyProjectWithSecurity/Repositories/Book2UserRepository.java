@@ -3,7 +3,6 @@ package com.example.MyProjectWithSecurity.Repositories;
 import com.example.MyProjectWithSecurity.data.Book;
 import com.example.MyProjectWithSecurity.data.Book2User;
 import com.example.MyProjectWithSecurity.data.User;
-import com.example.MyProjectWithSecurity.security.BookstoreUser;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
