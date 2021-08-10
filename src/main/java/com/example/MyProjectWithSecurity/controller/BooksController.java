@@ -1,6 +1,7 @@
 package com.example.MyProjectWithSecurity.controller;
 
 import com.example.MyProjectWithSecurity.Repositories.*;
+import com.example.MyProjectWithSecurity.Service.AnalitikService;
 import com.example.MyProjectWithSecurity.Service.BookService;
 import com.example.MyProjectWithSecurity.data.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +42,7 @@ public class BooksController {
     private BookReviewRepository bookReviewRepository;
     private BookReviewLikeRepository bookReviewLikeRepository;
     private BookRatingRepository bookRatingRepository;
+    private final AnalitikService analitikService;
 
 
 
@@ -48,7 +50,7 @@ public class BooksController {
     public BooksController(BookRepository bookRepository, ResorceStorage storage,
                            BookService bookService, UserRepository userRepository,
                            Book2UserRepository book2UserRepository, BookReviewRepository bookReviewRepository,
-                           BookReviewLikeRepository bookReviewLikeRepository, BookRatingRepository bookRatingRepository) {
+                           BookReviewLikeRepository bookReviewLikeRepository, BookRatingRepository bookRatingRepository, AnalitikService analitikService) {
         this.bookRepository = bookRepository;
         this.bookService = bookService;
         this.storage = storage;
@@ -57,44 +59,61 @@ public class BooksController {
         this.bookReviewRepository = bookReviewRepository;
         this.bookReviewLikeRepository = bookReviewLikeRepository;
         this.bookRatingRepository = bookRatingRepository;
+        this.analitikService = analitikService;
     }
 
+    /**
+     * Возвращает количество книг в "Отложено"
+     * Используется в header страницы для индикации текущего состояния сервиса "Отложено"
+     * @return - количество отложенных книг
+     */
     @ModelAttribute("postponedCount")
     public Integer postponedCound(){
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String username = auth.getName();
-
-        if(!username.equals("anonymousUser")) {
-            User user = new User();
-            user = userRepository.findUserByEmailContains(username);
-            List<Book2User>list = book2UserRepository.findBook2UsersByUser(user);
-            List<Book2User>filteredList = list.stream()
-                    .filter(c->c.getBook_file_type().getCode().equals("KEPT"))
-                    .collect(Collectors.toList());
-            List<Book> booksPost = new ArrayList<>();
-            for(Book2User book : filteredList)
-                booksPost.add(book.getBook());
+//        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+//        String username = auth.getName();
+        User user = new User();
+        user = analitikService.autorizationGetUser();
+        if(user != null) {
+//            User user = new User();
+//            user = userRepository.findUserByEmailContains(username);
+//            List<Book2User>list = book2UserRepository.findBook2UsersByUser(user);
+//            List<Book2User>filteredList = list.stream()
+//                    .filter(c->c.getBook_file_type().getCode().equals("KEPT"))
+//                    .collect(Collectors.toList());
+            List<Book2User>filteredList = analitikService.getUserBooksStatus(user,"KEPT");
+//            List<Book> booksPost = new ArrayList<>();
+//            for(Book2User book : filteredList)
+//                booksPost.add(book.getBook());
+            List<Book>booksPost = analitikService.getBooksFromBook2User(filteredList);
             return booksPost.size();
         }
         else{
             return 0;
         }
     }
+
+    /**
+     * Возвращает количество книг в корзине
+     * Используется в header страницы для индикации текущего состояния сервиса "Корзина"
+     * @return - количество книг в корзине
+     */
     @ModelAttribute("catCount")
     public Integer catCound(){
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String username = auth.getName();
-
-        if(!username.equals("anonymousUser")) {
-            User user = new User();
-            user = userRepository.findUserByEmailContains(username);
-            List<Book2User>list = book2UserRepository.findBook2UsersByUser(user);
-            List<Book2User>filteredList = list.stream()
-                    .filter(c->c.getBook_file_type().getId() == 2)
-                    .collect(Collectors.toList());
-            List<Book> booksPost = new ArrayList<>();
-            for(Book2User book : filteredList)
-                booksPost.add(book.getBook());
+//        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+//        String username = auth.getName();
+        User user = new User();
+        user = analitikService.autorizationGetUser();
+        if(user != null) {
+//            User user = new User();
+//            user = userRepository.findUserByEmailContains(username);
+//            List<Book2User>list = book2UserRepository.findBook2UsersByUser(user);
+//            List<Book2User>filteredList = list.stream()
+//                    .filter(c->c.getBook_file_type().getId() == 2)
+//                    .collect(Collectors.toList());
+            List<Book2User>filteredList = analitikService.getUserBooksStatus(user,"CART");
+            List<Book> booksPost = analitikService.getBooksFromBook2User(filteredList);
+//            for(Book2User book : filteredList)
+//                booksPost.add(book.getBook());
             return booksPost.size();
         }
         else{
@@ -102,14 +121,19 @@ public class BooksController {
         }
     }
 
+    /**
+     * Выводит имя текущего пользователя или сообщение "не определен"
+     * @return - имя пользователя, авторизированного в системе либо строку "не определен"
+     */
     @ModelAttribute("userCustom")
     public String userCustom(){
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String username = auth.getName();
+//        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+//        String username = auth.getName();
 
-        if(!username.equals("anonymousUser")) {
-            User user = new User();
-            user = userRepository.findUserByEmailContains(username);
+        User user = analitikService.autorizationGetUser();
+        if(user != null) {
+//            User user = new User();
+//            user = userRepository.findUserByEmailContains(username);
 
             return user.getUser_name();
         }
@@ -124,7 +148,13 @@ public class BooksController {
         return list.size();
     }
 
-
+    /**
+     * Контроллер для загрузки страницы /books/slug.html/
+     * @param sl - slug объекта Book
+     * @param model - model атрибуты для загрузки списка книг,списка комментариев, параметров системы рейтинга
+     * @param response - Respons объект для сохранения объекта cookie для сохранения информации о расчетном рейтинге книги
+     * @return - строка URL для переключения на требуемую строницу
+     */
     @GetMapping("/root/{sl}")
     public String getBookSlug(@PathVariable("sl") String sl, Model model, HttpServletResponse response){
         oldSlug = sl;
@@ -182,6 +212,12 @@ public class BooksController {
                 .body(new ByteArrayResource(data));
     }
 
+    /**
+     * Контроллер загрузки страницы /books/commentNew.html/
+     * @param newC - поле slug объекта Book
+     * @param model - модель, загружает список комментариев по slug
+     * @return - URL страницы перехода
+     */
     @GetMapping("/root/comment/{newC}")
     public String handlerNewComment(@PathVariable("newC") String newC, Model model){
         model.addAttribute("bookComment",bookRepository.findBookBySlug(newC));
@@ -189,16 +225,25 @@ public class BooksController {
         return "/books/commentNew";
     }
 
+    /**
+     * Обработка комментария к книге и его сохранение в базе данных
+     * @param model - модель не используется
+     * @param sl - атрибут slug объекта Book
+     * @param comment - строка comment типа String
+     * @return - URL страницы перехода
+     */
     @PostMapping("/books/comment/{sl}")
     public String handleAddNewComment(Model model, @PathVariable("sl") String sl, @RequestParam String comment){
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String username = auth.getName();
+        /*Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = auth.getName();*/
+        User user = analitikService.autorizationGetUser();
         Logger.getLogger(BooksController.class.getSimpleName()).info("Пятый контроллер комментарий");
-        if(!username.equals("anonymousUser")) {
-            User user = new User();
-            user = userRepository.findUserByEmailContains(username);
+        if(user != null) {
+           /* User user = new User();
+            user = userRepository.findUserByEmailContains(username);*/
             Book book = bookRepository.findBookBySlug(sl);
-            Book_Review book_review = new Book_Review();
+            analitikService.bookReviewSave(comment,book,user);
+           /*Book_Review book_review = new Book_Review();
             String comment_mini = "";
             String comment_tail = "";
             String test = "";
@@ -237,7 +282,7 @@ public class BooksController {
             book_review.setTime(LocalDateTime.now());
             book_review.setBook(book);
             book_review.setUser(user);
-            bookReviewRepository.save(book_review);
+            bookReviewRepository.save(book_review);*/
             return "redirect:/root/"+sl;
         }
         else{
@@ -246,13 +291,20 @@ public class BooksController {
         }
     }
 
+    /**
+     * Контроллер обработчик лайков. Сохранение в базе данных положительных лайков к комментарию
+     * @param sl - аттребут slug объекта Book
+     * @param comSlug - Id комментария типа Integer
+     * @return - ссылка на URL страницы перехода
+     */
     @PostMapping("/books/like/{sl}/{comSlug}")
     public String handleLakeReview(@PathVariable String sl, @PathVariable Integer comSlug){
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String username = auth.getName();
+        /*Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = auth.getName();*/
+        User user = analitikService.autorizationGetUser();
         Logger.getLogger(BooksController.class.getSimpleName()).info("Шестой контроллер лайки");
-        if(!username.equals("anonymousUser")) {
-            Book_Review_Like book_review_like = new Book_Review_Like();
+        if(user != null) {
+            /*Book_Review_Like book_review_like = new Book_Review_Like();
             bookReviewLikeRepository.save(book_review_like);
             book_review_like.setBook_review(bookReviewRepository.findBook_ReviewById(comSlug));
             book_review_like.setTime(LocalDateTime.now());
@@ -260,21 +312,29 @@ public class BooksController {
             User user = new User();
             user = userRepository.findUserByEmailContains(username);
             book_review_like.setUser(user);
-            //book_review_like.setId(2);
-            bookReviewLikeRepository.save(book_review_like);
-
+            book_review_like.setId(2);
+            bookReviewLikeRepository.save(book_review_like);*/
+            analitikService.likeReviewSave(comSlug,user);
             return "redirect:/root/"+sl;
         }else
             return "/signin";
     }
 
+    /**
+     * Контроллер обработки и сохранения дизлайков к комментариям пользователей о книгах
+     * @param sl - аттрибут slug объекта Book
+     * @param comSlug - id комментария, сохранненого в БД
+     * @param model - модель не используется
+     * @return - строку URL страницы перехода
+     */
     @PostMapping("/books/dizlike/{sl}/{comSlug}")
     public String handleDizLakeReview(@PathVariable String sl, @PathVariable Integer comSlug,Model model){
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String username = auth.getName();
+       /* Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = auth.getName();*/
+        User user = analitikService.autorizationGetUser();
         Logger.getLogger(BooksController.class.getSimpleName()).info("Седьмой контроллер дизлайки");
-        if(!username.equals("anonymousUser")) {
-            Book_Review_Like book_review_like = new Book_Review_Like();
+        if(user != null) {
+            /*Book_Review_Like book_review_like = new Book_Review_Like();
             bookReviewLikeRepository.save(book_review_like);
             book_review_like.setBook_review(bookReviewRepository.findBook_ReviewById(comSlug));
             book_review_like.setTime(LocalDateTime.now());
@@ -282,26 +342,38 @@ public class BooksController {
             User user = new User();
             user = userRepository.findUserByEmailContains(username);
             book_review_like.setUser(user);
-            bookReviewLikeRepository.save(book_review_like);
+            bookReviewLikeRepository.save(book_review_like);*/
+            analitikService.dizlikeReviewSave(comSlug,user);
 
             return "redirect:/root/" + sl;
         }else
             return "/books/signin";
     }
 
+    /**
+     * Контроллер обработки и сохранения рейтинга книги, выставленного пользователем User
+     * @param bookId - id книги Book
+     * @param value - величина рейтинга от 1 до 5
+     * @param response - объект Response - для сохранения объекта cookie
+     * @param request - объект Request - для доступа к объектам cookie
+     * @param model - model для передачи информации о cookie на страницу
+     * @return - адрес URL страницы назначения
+     */
     @PostMapping("/root/books/changeBookStatus/{bookId}/{value}")
     public String handleRatingSet(@PathVariable("bookId") Integer bookId, @PathVariable("value") Integer value,
                                   HttpServletResponse response, HttpServletRequest request, Model model){
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String userName = authentication.getName();
+        /*Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userName = authentication.getName();*/
+        User user = analitikService.autorizationGetUser();
         Logger.getLogger(BooksController.class.getSimpleName()).info("Девятый контроллер рейтинг");
-        if(!userName.equals("anonymousUser")) {
-            BookRating bookRating = new BookRating();
+        if(user != null) {
+          /*  BookRating bookRating = new BookRating();
             bookRating.setBook(bookRepository.findBookById(bookId));
             bookRating.setRating(value);
             User user = userRepository.findUserByEmailContains(userName);
             bookRating.setUser(user);
-            bookRatingRepository.save(bookRating);
+            bookRatingRepository.save(bookRating);*/
+            analitikService.BookRatingSave(bookId, value, user);
             model.addAttribute("isStatusRating", 1);
             Logger.getLogger(BooksController.class.getSimpleName()).info("Start controller changeBookStatus" + bookId + " " + value);
             Cookie cookie = new Cookie("statusRating", "1");

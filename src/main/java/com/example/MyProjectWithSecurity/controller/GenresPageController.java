@@ -1,6 +1,7 @@
 package com.example.MyProjectWithSecurity.controller;
 
 import com.example.MyProjectWithSecurity.Repositories.*;
+import com.example.MyProjectWithSecurity.Service.AnalitikService;
 import com.example.MyProjectWithSecurity.Service.AuthorService;
 import com.example.MyProjectWithSecurity.Service.BookService;
 import com.example.MyProjectWithSecurity.Service.GenreService;
@@ -22,63 +23,84 @@ import java.util.stream.Collectors;
 @Controller
 //@RequestMapping("/genres")
 public class GenresPageController {
-    private BookService bookService;
-    private AuthorService authorService;
-    private GenreService genreService;
+    private final BookService bookService;
+    private final AuthorService authorService;
+    private final GenreService genreService;
     private Integer genre_old = 0;
     private Integer offset = 0;
     private Integer limit = 5;
     private boolean flag = true;
     private SearchIdDto searchIdDto = new SearchIdDto();
     private List<Book2Genre>listBook = new ArrayList<>();
-    private UserRepository userRepository;
-    private Book2UserRepository book2UserRepository;
+    private final UserRepository userRepository;
+    private final Book2UserRepository book2UserRepository;
+    private final AnalitikService analitikService;
 
     @Autowired
-    public GenresPageController(BookService bookService, AuthorService authorService, GenreService genreService, UserRepository userRepository, Book2UserRepository book2UserRepository) {
+    public GenresPageController(BookService bookService, AuthorService authorService,
+                                GenreService genreService, UserRepository userRepository,
+                                Book2UserRepository book2UserRepository, AnalitikService analitikService) {
         this.bookService = bookService;
         this.authorService = authorService;
         this.genreService = genreService;
         this.userRepository = userRepository;
         this.book2UserRepository = book2UserRepository;
+        this.analitikService = analitikService;
     }
 
+    /**
+     * Возвращает количество книг в "Отложено"
+     * Используется в header страницы для индикации текущего состояния сервиса "Отложено"
+     * @return - количество отложенных книг
+     */
     @ModelAttribute("postponedCount")
     public Integer postponedCound(){
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String username = auth.getName();
-
-        if(!username.equals("anonymousUser")) {
-            User user = new User();
+        /*Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = auth.getName();*/
+        User user = new User();
+        user = analitikService.autorizationGetUser();
+        if(user != null) {
+            /*User user = new User();
             user = userRepository.findUserByEmailContains(username);
             List<Book2User>list = book2UserRepository.findBook2UsersByUser(user);
             List<Book2User>filteredList = list.stream()
                     .filter(c->c.getBook_file_type().getCode().equals("KEPT"))
-                    .collect(Collectors.toList());
-            List<Book> booksPost = new ArrayList<>();
+                    .collect(Collectors.toList());*/
+            List<Book2User>filteredList = analitikService.getUserBooksStatus(user,"KEPT");
+            /*List<Book> booksPost = new ArrayList<>();
             for(Book2User book : filteredList)
-                booksPost.add(book.getBook());
+                booksPost.add(book.getBook());*/
+            List<Book>booksPost = analitikService.getBooksFromBook2User(filteredList);
             return booksPost.size();
         }
         else{
             return 0;
         }
     }
+
+    /**
+     * Возвращает количество книг в корзине
+     * Используется в header страницы для индикации текущего состояния сервиса "Корзина"
+     * @return - количество книг в корзине
+     */
     @ModelAttribute("catCount")
     public Integer catCound(){
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String username = auth.getName();
-
-        if(!username.equals("anonymousUser")) {
-            User user = new User();
+        /*Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = auth.getName();*/
+        User user = new User();
+        user = analitikService.autorizationGetUser();
+        if(user != null) {
+            /*User user = new User();
             user = userRepository.findUserByEmailContains(username);
             List<Book2User>list = book2UserRepository.findBook2UsersByUser(user);
             List<Book2User>filteredList = list.stream()
                     .filter(c->c.getBook_file_type().getId() == 2)
-                    .collect(Collectors.toList());
-            List<Book> booksPost = new ArrayList<>();
+                    .collect(Collectors.toList());*/
+            List<Book2User>filteredList = analitikService.getUserBooksStatus(user,"CART");
+            List<Book> booksPost = analitikService.getBooksFromBook2User(filteredList);
+            /*List<Book> booksPost = new ArrayList<>();
             for(Book2User book : filteredList)
-                booksPost.add(book.getBook());
+                booksPost.add(book.getBook());*/
             return booksPost.size();
         }
         else{
@@ -86,15 +108,18 @@ public class GenresPageController {
         }
     }
 
+    /**
+     * Выводит имя текущего пользователя или сообщение "не определен"
+     * @return - имя пользователя, авторизированного в системе либо строку "не определен"
+     */
     @ModelAttribute("userCustom")
     public String userCustom(){
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String username = auth.getName();
-
-        if(!username.equals("anonymousUser")) {
-            User user = new User();
-            user = userRepository.findUserByEmailContains(username);
-
+        /*Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = auth.getName();*/
+        User user = analitikService.autorizationGetUser();
+        if(user != null) {
+            /*User user = new User();
+            user = userRepository.findUserByEmailContains(username);*/
             return user.getUser_name();
         }
         else{
