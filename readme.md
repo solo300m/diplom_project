@@ -820,3 +820,639 @@ public class AnalitikService {
 * в контроллерах /controller/AuthorsPageController, BookPostponedController,
 BooksController, BookshopCartController, MainPageController
   вычистил сервисную часть, заменив ее на методы из /Service/AnalitikService.java
+
+#Readme для домашнего задания 8.7
+1. Реализовать обработку security-специфичных исключений
+* Реализован класс обработки исключений ../errs/MyJWTException.java
+~~~
+package com.example.MyProjectWithSecurity.errs;
+
+public class MyJWTException extends Exception {
+
+    private final  String message;
+
+    public MyJWTException(String message) {
+        this.message = message;
+    }
+
+    @Override
+    public String toString() {
+        return message;
+    }
+}
+~~~
+* реализован контроллер обработчик JWT-зависимых исключений ../security/controller/JWTExceptionController.java
+
+~~~
+package com.example.MyProjectWithSecurity.security.controller;
+
+import com.example.MyProjectWithSecurity.errs.MyJWTException;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+
+@ControllerAdvice
+public class JWTExceptionController extends ResponseEntityExceptionHandler {
+
+//    @GetMapping("/signin")
+//    public String getErrorJWT(){
+//        return "/signin.html";
+//    }
+
+    @ResponseStatus(value = HttpStatus.NETWORK_AUTHENTICATION_REQUIRED)
+    @ExceptionHandler(value = MyJWTException.class)
+    @ResponseBody
+    public String handlerError(MyJWTException myJWTException){
+        return "/signin";
+    }
+}
+
+~~~
+* реализован тестовый контроллер ../security/controller/TestJwtTokenController.java
+~~~
+package com.example.MyProjectWithSecurity.security.controller;
+
+import com.example.MyProjectWithSecurity.security.jwt.JWTUtil;
+import com.example.MyProjectWithSecurity.security.service.JWTBlackListService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.*;
+
+@Controller
+@RequestMapping("/test_page")
+public class TestJwtTokenController {
+    private final JWTUtil jwtUtil;
+    private final JWTBlackListService jwtBlackListService;
+
+
+    @Autowired
+    public TestJwtTokenController(JWTUtil jwtUtil, JWTBlackListService jwtBlackListService) {
+        this.jwtUtil = jwtUtil;
+        this.jwtBlackListService = jwtBlackListService;
+    }
+
+    /**
+     * Контроллер getTokenPage разработан для тестирования функциональности jwt-токенов
+     * используется для открытия тестовой страницы ../test_page/token_test.html
+     * @param request
+     * @param model
+     * @return
+     */
+    @GetMapping("/token_test")
+   public String getTokenPage(HttpServletRequest request, Model model){
+       Cookie[]cookies = request.getCookies();
+       String[]token = null;
+       if(cookies != null){
+           model.addAttribute("cookie",cookies);
+           for(Cookie coo : cookies){
+               if(coo.getName().equals("token")){
+                   String foo = coo.getValue();
+                    token = foo.split("\\.");
+               }
+           }
+
+           if (token != null && token.length != 0) {
+               model.addAttribute("token", token);
+               Base64.Decoder decoder = Base64.getDecoder();
+               String header = new String(decoder.decode(token[0]));
+               String payload = new String(decoder.decode(token[1]));
+               //String tail = new String(decoder.decode(token[2]));
+               String[] decodArr = {header, payload};
+               model.addAttribute("decod", decodArr);
+
+               char[] ch = payload.toCharArray();
+               StringBuffer buff = new StringBuffer();
+               for (char c : ch) {
+                   if (c != '"' && (c != '{' && c != '}')) {
+                       buff.append(c);
+                   }
+               }
+               payload = buff.toString();
+               String[] payloadArr = payload.split("\\,");
+               Map<String, String> map = new TreeMap<>();
+               for (String s : payloadArr) {
+                   String[] test = s.trim().split("\\:");
+
+                   map.put(test[0], test[1]);
+
+               }
+               model.addAttribute("mapr", map);
+
+               Long experat = Long.parseLong(map.get("exp"));
+               Long iat = Long.parseLong(map.get("iat"));
+               LocalDateTime ex = LocalDateTime.ofInstant(Instant.ofEpochSecond(experat), ZoneId.systemDefault());
+               LocalDateTime i = LocalDateTime.ofInstant(Instant.ofEpochSecond(iat), ZoneId.systemDefault());
+               model.addAttribute("experati", ex);
+               model.addAttribute("both", i);
+           }
+       }
+       return "/test_page/token_test";
+   }
+
+    /**
+     * Тестовый контроллер используется для проверки методов работы с BlackList тоненов
+     * тестирование добавления в blacklist по нажатию кнопки формы ../test_page/token_test.html
+     * @param request
+     * @param response
+     * @return
+     */
+   @PostMapping("/terminate_token")
+    public String getTerminateToken(HttpServletRequest request, HttpServletResponse response){
+        jwtBlackListService.tokenTerminator(request, response);
+        jwtBlackListService.addBlackList(request);
+        return "redirect:/test_page/token_test";
+   }
+}
+~~~
+* реализована тестовая страница для визуализации jwt-токена ../templates/test_page/token_test.html
+~~~html
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+  <style>
+    .cookie_bloc{
+      margin-left: 1%;
+    }
+    .clames_block{
+      margin-left: 2%;
+    }
+    .decod_block{
+      margin-left: 3%;
+    }
+    .map_block{
+      margin-left: 4%;
+    }
+    h1{
+      margin-left: 1%;
+    }
+  </style>
+
+</head>
+<body>
+<h1>Тест cookis</h1>
+<div th:each="cook : ${cookie}">
+  <div class="cookie_bloc">
+    <p th:text="'JWT-токен cookie - ' + ${cook.getName()}"></p>
+    <p th:text="'Содержание JWT токена - '+${cook.getValue()}"></p>
+  </div>
+</div>
+<div class="clames_block" th:each="tok : ${token}">
+  <p th:text="${tok.toString()}"></p>
+</div>
+<div class="decod_block" th:each="dec : ${decod}">
+  <p th:text="${dec.toString()}"></p>
+</div>
+<div class="map_block" th:each="mapTo : ${mapr}">
+  <p th:text="'Ключ: ' + ${mapTo.getKey()} + '  значение: '+ ${mapTo.getValue()}"></p>
+</div>
+<div class="map_block">
+  <p th:text="'Время создания токена - ' + ${both}"></p>
+  <p th:text="'Время экспирации токена - ' + ${experati}"></p>
+</div>
+<form id="form_terminator" method="post" th:action="${'/test_page/terminate_token'}">
+  <input type="submit">Удалить токен</input>
+</form>
+<!--    <div class="valid_block">-->
+<!--        <p th:text="${valid}"></p>-->
+<!--    </div>-->
+<script src="/assets/plg/jQuery/jquery-3.5.1.min.js"></script>
+<!--    <script src="/assets/js/my_cookie_script.js"></script>-->
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+</body>
+</html>
+~~~
+* доработан класс ../security/jwt/JWTUnit.java
+
+~~~
+package com.example.MyProjectWithSecurity.security.jwt;
+
+
+import com.example.MyProjectWithSecurity.errs.MyJWTException;
+import io.jsonwebtoken.*;
+import org.jboss.logging.Logger;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Service;
+
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Function;
+
+@Service
+public class JWTUtil {
+
+    @Value("${auth.secret}")
+    private String secret;
+
+    private String createToken(Map<String,Object> claims, String username){
+        return Jwts
+                .builder()
+                .setClaims(claims)
+                .setSubject(username)
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + 1000*60*60*10))
+                .signWith(SignatureAlgorithm.HS256,secret).compact();
+    }
+
+    public String getSecret() {
+        return secret;
+    }
+
+    /**
+     * Метод генерации токена
+     * @param userDetails - параметры текущего пользователя
+     * @return - сгенерированный токен jwt
+     */
+    public String generateToken(UserDetails userDetails){
+        Map<String,Object> claims = new HashMap<>();
+        return createToken(claims, userDetails.getUsername());
+    }
+
+    /**
+     * Возвращает свойства пользователя
+     * @param token - jwt токен
+     * @param claimsResolver
+     * @param <T>
+     * @return
+     */
+    public <T> T extractClaim(String token, Function<Claims,T> claimsResolver) throws MyJWTException {
+        Claims claims = extractAllClaims(token);
+        return claimsResolver.apply(claims);
+
+    }
+
+    /**
+     * Возвращает распарсеное значение токена
+     * @param token
+     * @return
+     */
+    private Claims extractAllClaims(String token) throws MyJWTException {
+        Claims claims = null;
+        try{
+            claims = Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody();
+        }catch (ExpiredJwtException e){
+            Logger.getLogger(JWTUtil.class.getSimpleName()).info("Exception ExpiredJwtException token is experation from extractAllClaims");
+            throw new MyJWTException("token is not validation from extractAllClaims");
+        }
+        return claims;
+    }
+
+    /**
+     * Возвращает имя юзера из токена
+     * @param token
+     * @return
+     */
+    public String extractUsername(String token) throws MyJWTException {
+        String username = null;
+        try {
+             username = extractClaim(token, Claims::getSubject);
+        } catch (ExpiredJwtException e){
+            Logger.getLogger(JWTUtil.class.getSimpleName()).info("Exception ExpiredJwtException token is experation from extractUsername");
+            throw new MyJWTException("token is not validation from extractUsername");
+        }
+        return username;
+    }
+
+    /**
+     * Возвращает срок годности токена
+     * @param token
+     * @return
+     */
+    public Date extractExpiration(String token) throws MyJWTException {
+        return extractClaim(token, Claims::getExpiration);
+    }
+
+    /**
+     * Возвращает информацию boolean истек срок годности токена или нет
+     * @param token
+     * @return
+     */
+    public Boolean isTokenExpired(String token) throws MyJWTException {
+        return extractExpiration(token).before(new Date());
+    }
+
+    /**
+     * Возвращает информацию boolean о валидности или невалидности токена.
+     * Проверяет соответствие имени пользователя в токене и в текущем userDetails
+     * @param token
+     * @param userDetails
+     * @return
+     */
+    public Boolean validateToken(String token, UserDetails userDetails) throws MyJWTException {
+        boolean validation = false;
+        try {
+            Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody();
+            validation = true;
+        }catch (ExpiredJwtException e){
+            Logger.getLogger(JWTUtil.class.getSimpleName()).info("Exception ExpiredJwtException token is experation from validateToken");
+            throw new MyJWTException("token is not validation from validateToken");
+        } catch (SignatureException ex){
+            ex.printStackTrace();
+        } catch (Exception exe){
+            exe.printStackTrace();
+        }
+            /*String username = extractUsername(token);
+            return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));*/
+
+        return validation;
+    }
+}
+~~~
+* доработан класс ../security/jwt/JWTRequestFilter.java
+~~~
+package com.example.MyProjectWithSecurity.security.jwt;
+
+import com.example.MyProjectWithSecurity.data.JWTBlackList;
+import com.example.MyProjectWithSecurity.security.repository.JWTBlackListRepository;
+import com.example.MyProjectWithSecurity.errs.MyJWTException;
+import com.example.MyProjectWithSecurity.security.service.BookstoreUserDetailService;
+import com.example.MyProjectWithSecurity.security.service.BookstoreUserDetails;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.List;
+import java.util.logging.Logger;
+
+@Component
+public class JWTRequestFilter extends OncePerRequestFilter {
+
+    private final BookstoreUserDetailService bookstoreUserDetailService;
+    private final JWTUtil jwtUtil;
+    private final JWTBlackListRepository jwtBlackListRepository;
+    //private final BookstoreUserDetails bookstoreUserDetails;
+
+    @Autowired
+    public JWTRequestFilter(BookstoreUserDetailService bookstoreUserDetailService, JWTUtil jwtUtil, JWTBlackListRepository jwtBlackListRepository) {
+        this.bookstoreUserDetailService = bookstoreUserDetailService;
+        this.jwtUtil = jwtUtil;
+
+        //this.bookstoreUserDetails = bookstoreUserDetails;
+        this.jwtBlackListRepository = jwtBlackListRepository;
+    }
+
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse,
+                                    FilterChain filterChain) throws ServletException, IOException {
+        String token = null;
+        String username = null;
+        Cookie[] cookies = httpServletRequest.getCookies();
+
+        if(cookies != null){
+            for(Cookie cookie : cookies){
+                if(cookie.getName().equals("token")){
+                    token = cookie.getValue();
+                    List<JWTBlackList>blackLists = jwtBlackListRepository.findAll();
+                    for(JWTBlackList jl:blackLists){
+                        if(token.equals(jl.getTokenValue())){
+                            token="";
+                        }
+                    }
+//
+                    try {
+                        if(token.equals("")){
+                            username = null;
+                        }
+                        else
+                            username = jwtUtil.extractUsername(token);
+                    } catch (MyJWTException e) {
+                        e.printStackTrace();
+                    }
+
+                }
+
+                if(username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                    BookstoreUserDetails userDetails = (BookstoreUserDetails) bookstoreUserDetailService.loadUserByUsername(username);
+                    try {
+                        if (jwtUtil.validateToken(token, userDetails)) {
+                            UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(userDetails,
+                                    null, userDetails.getAuthorities());
+                            authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(httpServletRequest));
+                            SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+                        }
+                    } catch (MyJWTException e) {
+                        Logger.getLogger(JWTRequestFilter.class.getSimpleName()).info("I Catch Exception !");
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+        filterChain.doFilter(httpServletRequest,httpServletResponse);
+    }
+
+}
+~~~
+3. Реализовать механизм blacklist для невалидных JWT-токенов
+* реализован класс ../data/JWTBlackList.java
+~~~
+package com.example.MyProjectWithSecurity.data;
+
+import javax.persistence.*;
+
+/**
+ * класс JWTBlackList создает таблицу в базе данных black_list
+ * для записи туда токенов после выхода из программы по алгоритму /logout
+ */
+@Entity
+@Table(name = "blackList")
+public class JWTBlackList {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+    @Column(name = "value")
+    private String tokenValue;
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public String getTokenValue() {
+        return tokenValue;
+    }
+
+    public void setTokenValue(String tokenValue) {
+        this.tokenValue = tokenValue;
+    }
+}
+~~~
+* разработан класс ../security/service/JWTBlackListService.java
+~~~
+package com.example.MyProjectWithSecurity.security.service;
+
+import com.example.MyProjectWithSecurity.security.repository.JWTBlackListRepository;
+import com.example.MyProjectWithSecurity.data.JWTBlackList;
+import com.example.MyProjectWithSecurity.security.data.BookstoreUserRegister;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Logger;
+
+@Service
+public class JWTBlackListService {
+    public final JWTBlackListRepository jwtBlackListRepository;
+    public final BookstoreUserRegister userRegister;
+
+
+    public JWTBlackListService(JWTBlackListRepository jwtBlackListRepository, BookstoreUserRegister userRegister) {
+        this.jwtBlackListRepository = jwtBlackListRepository;
+        this.userRegister = userRegister;
+    }
+
+    /**
+     * Метод возвращает из базы данных список невалидных токенов
+     * @return список невалидных токенов
+     */
+    public List<JWTBlackList> initBlackList(){
+        List<JWTBlackList> jwtBlackLists = jwtBlackListRepository.findAll();
+        if(jwtBlackLists.size() == 0 || jwtBlackLists == null){
+            return new ArrayList<>();
+        }
+        else
+            return jwtBlackLists;
+    }
+
+    /**
+     * Метод добавляет токен в список и базу данных BlackList токенов
+     * метод запускается при открытии страницы signin.html
+     * @param request - HTTPServletRequest - получение списка действующих токенов
+     * @return 0 - операция добавления прошла успешно, -1 - произошла ошибка
+     */
+    public Integer addBlackList(HttpServletRequest request){
+        List<JWTBlackList>jwtBlackLists = initBlackList();
+        Cookie[]cookies = request.getCookies();
+        String tokenContext = "";
+        String tokenName = "";
+        if(cookies != null){
+            for(Cookie coo : cookies){
+                if(coo.getName().equals("tokenCopy")){
+                    tokenContext = coo.getValue();
+                    tokenName = coo.getName();
+                }
+            }
+            boolean chek = true;
+            for(JWTBlackList item : jwtBlackLists){
+                if(item.getTokenValue().equals(tokenContext)) {
+                    chek = false;
+                    break;
+                }
+                else{
+                    chek = true;
+                }
+            }
+            if(chek == true){
+                JWTBlackList jwtSave = new JWTBlackList();
+                jwtSave.setTokenValue(tokenContext);
+                jwtBlackListRepository.save(jwtSave);
+                jwtBlackLists.add(jwtSave);
+                return 0;
+            }
+            else{
+                Logger.getLogger(JWTBlackListService.class.getSimpleName()).info("JWT-token"+tokenName+"in BlackList allready");
+                return -1;
+            }
+        }else{
+            Logger.getLogger(JWTBlackListService.class.getSimpleName()).info("JWT-token with name Token do not founded");
+            return 1;
+        }
+    }
+
+    /**
+     * метод tokenTerminator - неудачная тестовая попытка уничтожить jwt-токен
+     * в работе программы не используется, нужен был для проверки версии
+     * @param request
+     * @param response
+     */
+    public void tokenTerminator(HttpServletRequest request, HttpServletResponse response){
+        Cookie[]cookies = request.getCookies();
+        String[]tokenJWT = null;
+        String payload = "";
+        if(cookies != null){
+            for(Cookie coo : cookies){
+                if(coo.getName().equals("token")){
+
+                    Cookie cookie = new Cookie("token","");
+                    cookie.setMaxAge(0);
+
+                    response.addCookie(cookie);
+                    SecurityContextHolder.clearContext();
+                }
+            }
+        }
+    }
+}
+
+~~~
+* доработаны контроллеры @PostMapping("/login") класса ../security/controller/AuthUserController.java
+~~~
+@PostMapping("/login")
+    @ResponseBody
+    public ContactConfirmationResponse handleLogin(@RequestBody ContactConfirmationPayload payload, HttpServletResponse httpServletResponse){
+        //return userRegister.login(payload); //данная строка используется при использовании механизма сессий. Все что ниже для токенов.
+        //____________Механизм использования токенов JWT___________________________//
+        //----HttpServletResponse httpServletResponse в параментах тоже добавлен для схемы работы с токенами--//
+        ContactConfirmationResponse loginResponse = userRegister.jwtLogin(payload);
+        Cookie cookie = new Cookie("token",loginResponse.getResult());
+        Cookie jwtCopy = new Cookie("tokenCopy",loginResponse.getResult()); //создание копии для сохранения в BlackList токенов
+
+        httpServletResponse.addCookie(cookie);
+        httpServletResponse.addCookie(jwtCopy);
+        return loginResponse;
+    }
+
+~~~
+* доработаны контроллеры @GetMapping("/signin") класса ../security/controller/AuthUserController.java
+~~~
+@GetMapping("/signin")
+    public String handleSignin(HttpServletRequest request){
+        jwtBlackListService.addBlackList(request); //добавлено для записи токена в BlackList
+        Logger.getLogger(AuthUserController.class.getSimpleName()).info("Open signin page from AuthUserController!");
+        return "signin";
+    }
+~~~
+5. Доработать OAuth-авторизацию
+* настройка application.properties
+~~~
+spring.security.oauth2.client.registration.facebook.client-id=236452818404590
+spring.security.oauth2.client.registration.facebook.client-secret=f841cf4014771e8c97348c3de67669c8
+~~~
+* в процессе работы с Facebook возникла проблема со службой безопасности данного сайта
+Facebook по непонятным причинам заблокировал аутентификацию OAuth2
+* сгенерировано приложение в Facebook developers другого типа. Блокировка сервера защиты исчезла, но токен для входа в
+приложение не передается и аутентификацию завершить не получается.
+Данный пункт выполнен не полностью
+6. Ограничить доступ к функционалу отзывов на книги
+* данный функционал был реализован полностью при выполнении задания 7.6
+
