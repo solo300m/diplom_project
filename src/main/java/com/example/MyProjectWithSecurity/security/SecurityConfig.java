@@ -58,6 +58,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .and().formLogin()
                 .loginPage("/signin").failureUrl("/signin")
                 .and().logout().logoutUrl("/logout").logoutSuccessUrl("/signin").deleteCookies("token")//эта строка добавляется если используются токены вместо сессий
+
                 //два параметра ниже нужны для настройки работы с OAUTH2 идентификация через Facebook
                 .and().oauth2Login()
                 .and().oauth2Client();

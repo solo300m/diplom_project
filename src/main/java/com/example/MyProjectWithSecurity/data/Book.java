@@ -277,7 +277,7 @@ public class Book {
             for(BookRating s: list){
                 sumRating = sumRating + s.getRating();
             }
-            Rating = Math.toIntExact(Math.round((double) sumRating / list.size()));
+            Rating = (int) Math.round((double) sumRating / list.size());
             return Rating;
         }
         else{

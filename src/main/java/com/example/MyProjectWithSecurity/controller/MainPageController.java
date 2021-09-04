@@ -6,16 +6,22 @@ import com.example.MyProjectWithSecurity.Service.AuthorService;
 import com.example.MyProjectWithSecurity.data.*;
 import com.example.MyProjectWithSecurity.Service.BookService;
 import com.example.MyProjectWithSecurity.Service.HibernateService;
+import com.example.MyProjectWithSecurity.security.jwt.JWTUtil;
+import com.example.MyProjectWithSecurity.security.service.BookstoreUserDetails;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -30,18 +36,20 @@ public class MainPageController {
     private final UserRepository userRepository;
     private final Book2UserRepository book2UserRepository;
     private final AnalitikService analitikService;
+    private final JWTUtil jwtUtil;
 
 
     @Autowired
     public MainPageController(BookService bookService, AuthorService authorService, HibernateService hibernateService,
                               UserRepository userRepository, Book2UserRepository book2UserRepository,
-                              AnalitikService analitikService) {
+                              AnalitikService analitikService, JWTUtil jwtUtil) {
         this.bookService = bookService;
         this.authorService = authorService;
         this.hibernateService = hibernateService;
         this.userRepository = userRepository;
         this.book2UserRepository = book2UserRepository;
         this.analitikService = analitikService;
+        this.jwtUtil = jwtUtil;
     }
 
 
@@ -104,6 +112,45 @@ public class MainPageController {
             return 0;
         }
     }
+
+    /*@ModelAttribute("cookieArray")
+    public List<Cookie> getCookieArray(HttpServletRequest request){
+
+        List<Cookie> cookieArr = Arrays.stream(request.getCookies()).collect(Collectors.toList());
+
+            Cookie cookieCurent = null;
+            for (Cookie cookie : cookieArr) {
+                Logger.getLogger(MainPageController.class.getSimpleName()).info("Активные cookie " + cookie.getName() + " " + cookie.getValue());
+                if (cookie.getName().equals("token")) {
+                    cookieCurent = cookie;
+                }
+
+            }
+
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (!(authentication instanceof AnonymousAuthenticationToken)) {
+                BookstoreUserDetails userDetails = (BookstoreUserDetails) authentication.getPrincipal();
+                Logger.getLogger(MainPageController.class.getSimpleName()).info("Token Name - " + userDetails.getUsername()
+                        + " Name user is " + userDetails.getBookstoreUser().getName() + " validate is "
+                        + userDetails.isAccountNonExpired());
+
+                Claims claims = Jwts.parser()
+                        .setSigningKey("skillbox")
+                        .parseClaimsJws(cookieCurent.getValue())
+                        .getBody();
+                Logger.getLogger(MainPageController.class.getSimpleName()).info("Идентификатор пользователя " + claims.getSubject());
+                Logger.getLogger(MainPageController.class.getSimpleName()).info("Время входа в систему " + new SimpleDateFormat("yyyy.MM.dd - HH:mm:ss").format(claims.getIssuedAt()));
+                Logger.getLogger(MainPageController.class.getSimpleName()).info("Срок действия " + new SimpleDateFormat("yyyy.MM.dd - HH:mm:ss").format(claims.getExpiration()));
+                Logger.getLogger(MainPageController.class.getSimpleName()).info("Роль пользователя " + claims.get("role"));
+                Logger.getLogger(MainPageController.class.getSimpleName()).info("Параметр getAudience() " + claims.getAudience());
+                Logger.getLogger(MainPageController.class.getSimpleName()).info("Параметр getIssuer() " + claims.getIssuer());
+                Logger.getLogger(MainPageController.class.getSimpleName()).info("Параметр getNotBefore() " + claims.getNotBefore());
+
+            }
+
+
+        return cookieArr;
+    }*/
 
     /**
      * Выводит имя текущего пользователя или сообщение "не определен"

@@ -40,6 +40,7 @@ $(function(){
             $('#s2').addClass('Rating-star_view');
             $('#s3').addClass('Rating-star_view');
             $('#s4').addClass('Rating-star_view');
+            $('#s5').addClass('Rating-star_view');
             break;
         default:
             //alert("Значение cookie allRating = "+ $status);

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        .cookie_bloc{
+            margin-left: 1%;
+        }
+        .clames_block{
+            margin-left: 2%;
+        }
+        .decod_block{
+            margin-left: 3%;
+        }
+        .map_block{
+            margin-left: 4%;
+        }
+        h1{
+            margin-left: 1%;
+        }
+    </style>
+
+</head>
+<body>
+    <h1>Тест cookis</h1>
+    <div th:each="cook : ${cookie}">
+        <div class="cookie_bloc">
+            <p th:text="'JWT-токен cookie - ' + ${cook.getName()}"></p>
+            <p th:text="'Содержание JWT токена - '+${cook.getValue()}"></p>
+        </div>
+    </div>
+    <div class="clames_block" th:each="tok : ${token}">
+        <p th:text="${tok.toString()}"></p>
+    </div>
+    <div class="decod_block" th:each="dec : ${decod}">
+        <p th:text="${dec.toString()}"></p>
+    </div>
+    <div class="map_block" th:each="mapTo : ${mapr}">
+        <p th:text="'Ключ: ' + ${mapTo.getKey()} + '  значение: '+ ${mapTo.getValue()}"></p>
+    </div>
+    <div class="map_block">
+        <p th:text="'Время создания токена - ' + ${both}"></p>
+        <p th:text="'Время экспирации токена - ' + ${experati}"></p>
+    </div>
+    <form id="form_terminator" method="post" th:action="${'/test_page/terminate_token'}">
+        <input type="submit">Удалить токен</input>
+    </form>
+<!--    <div class="valid_block">-->
+<!--        <p th:text="${valid}"></p>-->
+<!--    </div>-->
+    <script src="/assets/plg/jQuery/jquery-3.5.1.min.js"></script>
+<!--    <script src="/assets/js/my_cookie_script.js"></script>-->
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+</body>
+</html>

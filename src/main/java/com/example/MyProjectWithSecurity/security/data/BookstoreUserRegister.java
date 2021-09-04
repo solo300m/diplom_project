@@ -37,6 +37,10 @@ public class BookstoreUserRegister {
         this.userRepository = userRepository;
     }
 
+    /**
+     * Регистрация нового пользователя BookstoreUser
+     * @param registrationForm
+     */
     public void registerNewUser(RegistrationForm registrationForm){
         if(bookstoreUserRepository.findBookstoreUserByEmail(registrationForm.getEmail()) == null){
             BookstoreUser user = new BookstoreUser();
@@ -72,6 +76,11 @@ public class BookstoreUserRegister {
         }
     }
 
+    /**
+     *
+     * @param payload
+     * @return
+     */
     public ContactConfirmationResponse login(ContactConfirmationPayload payload) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(payload.getContact(),

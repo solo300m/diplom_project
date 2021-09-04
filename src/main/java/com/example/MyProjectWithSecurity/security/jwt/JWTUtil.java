@@ -1,9 +1,9 @@
 package com.example.MyProjectWithSecurity.security.jwt;
 
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import com.example.MyProjectWithSecurity.errs.MyJWTException;
+import io.jsonwebtoken.*;
+import org.jboss.logging.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -29,35 +29,106 @@ public class JWTUtil {
                 .signWith(SignatureAlgorithm.HS256,secret).compact();
     }
 
+    public String getSecret() {
+        return secret;
+    }
+
+    /**
+     * Метод генерации токена
+     * @param userDetails - параметры текущего пользователя
+     * @return - сгенерированный токен jwt
+     */
     public String generateToken(UserDetails userDetails){
         Map<String,Object> claims = new HashMap<>();
         return createToken(claims, userDetails.getUsername());
     }
 
-    public <T> T extractClaim(String token, Function<Claims,T> claimsResolver){
+    /**
+     * Возвращает свойства пользователя
+     * @param token - jwt токен
+     * @param claimsResolver
+     * @param <T>
+     * @return
+     */
+    public <T> T extractClaim(String token, Function<Claims,T> claimsResolver) throws MyJWTException {
         Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);
 
     }
 
-    private Claims extractAllClaims(String token){
-        return Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody();
+    /**
+     * Возвращает распарсеное значение токена
+     * @param token
+     * @return
+     */
+    private Claims extractAllClaims(String token) throws MyJWTException {
+        Claims claims = null;
+        try{
+            claims = Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody();
+        }catch (ExpiredJwtException e){
+            Logger.getLogger(JWTUtil.class.getSimpleName()).info("Exception ExpiredJwtException token is experation from extractAllClaims");
+            throw new MyJWTException("token is not validation from extractAllClaims");
+        }
+        return claims;
     }
 
-    public String extractUsername(String token){
-        return extractClaim(token,Claims::getSubject);
+    /**
+     * Возвращает имя юзера из токена
+     * @param token
+     * @return
+     */
+    public String extractUsername(String token) throws MyJWTException {
+        String username = null;
+        try {
+             username = extractClaim(token, Claims::getSubject);
+        } catch (ExpiredJwtException e){
+            Logger.getLogger(JWTUtil.class.getSimpleName()).info("Exception ExpiredJwtException token is experation from extractUsername");
+            throw new MyJWTException("token is not validation from extractUsername");
+        }
+        return username;
     }
 
-    public Date extractExpiration(String token){
+    /**
+     * Возвращает срок годности токена
+     * @param token
+     * @return
+     */
+    public Date extractExpiration(String token) throws MyJWTException {
         return extractClaim(token, Claims::getExpiration);
     }
 
-    public Boolean isTokenExpired(String token){
+    /**
+     * Возвращает информацию boolean истек срок годности токена или нет
+     * @param token
+     * @return
+     */
+    public Boolean isTokenExpired(String token) throws MyJWTException {
         return extractExpiration(token).before(new Date());
     }
 
-    public Boolean validateToken(String token, UserDetails userDetails){
-        String username = extractUsername(token);
-        return(username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+    /**
+     * Возвращает информацию boolean о валидности или невалидности токена.
+     * Проверяет соответствие имени пользователя в токене и в текущем userDetails
+     * @param token
+     * @param userDetails
+     * @return
+     */
+    public Boolean validateToken(String token, UserDetails userDetails) throws MyJWTException {
+        boolean validation = false;
+        try {
+            Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody();
+            validation = true;
+        }catch (ExpiredJwtException e){
+            Logger.getLogger(JWTUtil.class.getSimpleName()).info("Exception ExpiredJwtException token is experation from validateToken");
+            throw new MyJWTException("token is not validation from validateToken");
+        } catch (SignatureException ex){
+            ex.printStackTrace();
+        } catch (Exception exe){
+            exe.printStackTrace();
+        }
+            /*String username = extractUsername(token);
+            return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));*/
+
+        return validation;
     }
 }

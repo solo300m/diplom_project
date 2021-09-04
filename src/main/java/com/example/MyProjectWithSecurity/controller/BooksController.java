@@ -156,7 +156,7 @@ public class BooksController {
      * @return - строка URL для переключения на требуемую строницу
      */
     @GetMapping("/root/{sl}")
-    public String getBookSlug(@PathVariable("sl") String sl, Model model, HttpServletResponse response){
+    public String getBookSlug(@PathVariable("sl") String sl, Model model, HttpServletResponse response, HttpServletRequest reguest){
         oldSlug = sl;
         Logger.getLogger(BooksController.class.getName()).info("SlugBook Page open  "+oldSlug);
         Book book = bookRepository.findBookBySlug(sl);
@@ -176,6 +176,10 @@ public class BooksController {
         cookie.setPath("/");
         //cookie.setMaxAge(60*60);
         response.addCookie(cookie);
+        //___________Test cookie status_____________________
+        //Cookie cookieTest = WebUtils.getCookie(reguest,"allRating");
+        //Logger.getLogger(BooksController.class.getSimpleName()).info("Суммарный рейтинг книги " + cookieTest.getName()+" "+cookieTest.getValue());
+
         return "/books/slug";
     }
 
